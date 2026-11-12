@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Ready: can AI agents shop your store?</title>
+<meta name="description" content="A readiness scanner for agentic commerce: agent access, UCP, agent-to-agent, AI discoverability and checkout.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F7F8F6; --surface: #FFFFFF; --ink: #1B2430; --muted: #5E6873; --rule: #D9DDE1;
+  --rung: #23577A; --rung-soft: #DCE7EF;
+  --font: "Schibsted Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #12171D; --surface: #1A2129; --ink: #E7EBEF; --muted: #9AA5B1; --rule: #2C3640;
+          --rung: #6FA8D1; --rung-soft: #22313F; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+main { max-width: 980px; margin: 0 auto; padding: 64px 24px 96px; }
+a { color: inherit; text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--rung); outline-offset: 3px; }
+h1 { font-size: clamp(2.6rem, 7.5vw, 5rem); line-height: .98; font-weight: 900; letter-spacing: -0.035em; margin: 0; max-width: 13ch; }
+h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 18px; }
+.intro { max-width: 58ch; color: var(--muted); font-size: 1.1rem; margin: 22px 0 0; }
+
+.ladder { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; align-items: end; margin: 56px 0 0; }
+.rung { background: var(--rung-soft); border-radius: 4px 4px 0 0; padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; }
+.rung b { font-weight: 700; font-size: 1rem; line-height: 1.15; }
+.rung span { font-size: .82rem; color: var(--muted); line-height: 1.35; margin-top: 6px; }
+.rung:nth-child(1) { height: 120px; } .rung:nth-child(2) { height: 170px; } .rung:nth-child(3) { height: 220px; }
+.rung:nth-child(4) { height: 270px; } .rung:nth-child(5) { height: 320px; background: var(--rung); color: var(--paper); }
+.rung:nth-child(5) span { color: inherit; opacity: .85; }
+@media (prefers-reduced-motion: no-preference) {
+  .rung { transform-origin: bottom; animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
+  .rung:nth-child(2) { animation-delay: .08s } .rung:nth-child(3) { animation-delay: .16s }
+  .rung:nth-child(4) { animation-delay: .24s } .rung:nth-child(5) { animation-delay: .32s }
+  @keyframes rise { from { transform: scaleY(.15); opacity: 0 } to { transform: none; opacity: 1 } }
+}
+.cta { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-top: 36px; }
+.btn { display: inline-block; background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 700; padding: 12px 20px; border-radius: 6px; }
+.cta a:not(.btn) { font-weight: 500; }
+
+section { margin-top: 88px; }
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 0 40px; }
+.check { border-top: 1px solid var(--rule); padding: 16px 0 20px; }
+.check h3 { font-size: 1.05rem; margin: 0 0 4px; }
+.check p { margin: 0; color: var(--muted); font-size: .95rem; }
+ol.steps { padding-left: 1.3em; max-width: 64ch; }
+ol.steps li { margin-bottom: 14px; padding-left: 4px; }
+pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: .88rem; line-height: 1.5; margin: 8px 0 0; }
+.honest { max-width: 64ch; color: var(--muted); }
+.honest p { margin: 0 0 12px; }
+footer { margin-top: 88px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: .88rem; }
+@media (max-width: 640px) {
+  .ladder { gap: 3px; } .rung { padding: 7px; } .rung b { font-size: .78rem; } .rung span { display: none; }
+  .rung:nth-child(1) { height: 70px } .rung:nth-child(2) { height: 100px } .rung:nth-child(3) { height: 130px }
+  .rung:nth-child(4) { height: 160px } .rung:nth-child(5) { height: 190px }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Can AI agents shop your store?</h1>
+  <p class="intro">Agent Ready scans a commerce site the way a shopping agent meets it: can it get in, understand the catalogue, talk to the store, and reach checkout. The result is a maturity tier, a score and a prioritised fix list.</p>
+
+  <div class="ladder" aria-label="Five maturity tiers, lowest to highest">
+    <div class="rung"><b>Invisible</b><span>Agents are blocked or can’t read product pages</span></div>
+    <div class="rung"><b>Readable</b><span>Agents get in and read content without JavaScript</span></div>
+    <div class="rung"><b>Discoverable</b><span>Answer engines understand products, prices and stock</span></div>
+    <div class="rung"><b>Transactable</b><span>An agent can reach checkout, by site or by UCP</span></div>
+    <div class="rung"><b>Agent-native</b><span>Live UCP checkout plus a store agent or MCP server</span></div>
+  </div>
+  <div class="cta">
+    <a class="btn" href="sample-report.html">See a sample report</a>
+    <a href="https://github.com/">Get the scanner on GitHub</a>
+  </div>
+
+  <section aria-labelledby="what">
+    <h2 id="what">What it checks</h2>
+    <div class="checks">
+      <div class="check"><h3>Agent access</h3><p>robots.txt rules for 15 AI agents, and whether bot protection treats agents differently from browsers. Blocking training crawlers isn’t penalised.</p></div>
+      <div class="check"><h3>Commerce protocols</h3><p>The UCP profile at /.well-known/ucp, validated against the release it declares, with every endpoint probed. ACP is reported as signals, since it can’t be verified from outside.</p></div>
+      <div class="check"><h3>Agent-to-agent</h3><p>A2A agent cards, MCP servers (with a read-only handshake that lists their tools) and on-site assistants.</p></div>
+      <div class="check"><h3>AI discoverability</h3><p>Product markup completeness, GTINs, return and shipping policies, ratings, price consistency, brand identity, sitemaps and llms.txt.</p></div>
+      <div class="check"><h3>Works without JavaScript</h3><p>Whether name, price and markup exist before scripts run. Most AI fetchers never execute JavaScript.</p></div>
+      <div class="check"><h3>Task completion</h3><p>A headless agent adds one item to the cart and opens checkout, then stops. It never enters details or pays.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="run">
+    <h2 id="run">Run a scan</h2>
+    <ol class="steps">
+      <li>Install the scanner and, for the journey checks, a headless browser.
+        <pre>pip install -e '.[browser]'
+playwright install chromium</pre></li>
+      <li>Scan a store, optionally against competitors.
+        <pre>agentready scan client.com --vs rival-one.com --vs rival-two.com</pre></li>
+      <li>Open the HTML file in <code>reports/</code>. Reports stay on your machine and are never committed.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="limits" class="honest">
+    <h2 id="limits">What a scan can’t tell you</h2>
+    <p>Bot-protection results use AI agents’ user-agent strings from our own IP address. Real agents can be verified by IP or signature and treated differently, so these findings are marked as inferred.</p>
+    <p>ACP (ChatGPT checkout) integrations are private between the merchant, OpenAI and Stripe. The scan reports signals; confirm enrolment with the client.</p>
+    <p>Whether ChatGPT, Gemini or Perplexity actually recommend a brand needs their APIs, and is planned as a later module.</p>
+  </section>
+
+  <footer>Agent Ready scans politely: one request at a time per site, a small sample of pages, and nothing transactional.</footer>
+</main>
+</body>
+</html>

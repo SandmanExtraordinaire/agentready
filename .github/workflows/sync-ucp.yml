@@ -1,0 +1,22 @@
+# Weekly: pull any new UCP release schemas and open a PR if something changed.
+name: Sync UCP schemas
+on:
+  schedule: [{cron: "0 4 * * 1"}]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python scripts/sync_ucp_schemas.py
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/ucp-schemas
+          title: "Update vendored UCP schemas"
+          commit-message: "Update vendored UCP schemas"
+          body: "New or changed UCP release schemas. Tests run on this PR; check that tiers still behave as expected."

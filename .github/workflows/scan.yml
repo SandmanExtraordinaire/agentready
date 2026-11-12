@@ -1,0 +1,45 @@
+# Run a scan from the GitHub UI: Actions → "Scan a store" → Run workflow.
+# The report is attached to the run as a private artifact (visible only to
+# people with access to this repo) and is NEVER committed or published.
+name: Scan a store
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Store domain, e.g. example.com"
+        required: true
+      competitors:
+        description: "Competitor domains, space-separated (optional)"
+        required: false
+        default: ""
+      product_urls:
+        description: "Specific product URLs, space-separated (optional)"
+        required: false
+        default: ""
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - name: Install scanner and headless Chromium
+        run: |
+          pip install -e '.[browser]'
+          python -m playwright install --with-deps chromium
+      - name: Scan
+        env:
+          TARGET: ${{ inputs.target }}
+          COMPETITORS: ${{ inputs.competitors }}
+          PRODUCTS: ${{ inputs.product_urls }}
+        run: |
+          args=("$TARGET" --out reports --name report)
+          for c in $COMPETITORS; do args+=(--vs "$c"); done
+          for p in $PRODUCTS; do args+=(--product-url "$p"); done
+          agentready scan "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: readiness-report-${{ github.run_number }}
+          path: reports/
+          retention-days: 14

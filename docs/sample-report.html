@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic commerce readiness: client-store.example</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F7F8F6; --surface: #FFFFFF; --ink: #1B2430; --muted: #5E6873; --rule: #D9DDE1;
+  --rung: #23577A; --rung-soft: #DCE7EF;
+  --pass: #2E7D5B; --partial: #A86A12; --fail: #B23A3A; --info: #5E6873;
+  --font: "Schibsted Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12171D; --surface: #1A2129; --ink: #E7EBEF; --muted: #9AA5B1; --rule: #2C3640;
+    --rung: #6FA8D1; --rung-soft: #22313F;
+    --pass: #5CBF8F; --partial: #E0A44A; --fail: #E57373; --info: #9AA5B1;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.55 var(--font);
+       font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+main { max-width: 900px; margin: 0 auto; padding: 56px 24px 96px; }
+a { color: inherit; text-underline-offset: 3px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--rung); outline-offset: 3px; }
+h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.02; font-weight: 900; letter-spacing: -0.03em; margin: 0 0 12px; overflow-wrap: anywhere; }
+h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 64px 0 6px; }
+h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.lede { color: var(--muted); max-width: 62ch; margin: 0; }
+.meta { color: var(--muted); font-size: .9rem; margin-top: 18px; }
+
+/* The ladder: the one memorable element. Rungs climb left to right. */
+.ladder { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; gap: 6px; margin: 44px 0 10px; }
+.rung { position: relative; background: var(--rung-soft); border-radius: 4px 4px 0 0; padding: 10px 10px 12px;
+        display: flex; flex-direction: column; justify-content: flex-end; min-height: 64px; }
+.rung:nth-child(1) { height: 72px; } .rung:nth-child(2) { height: 112px; } .rung:nth-child(3) { height: 152px; }
+.rung:nth-child(4) { height: 192px; } .rung:nth-child(5) { height: 232px; }
+.rung.reached { background: var(--rung); color: var(--surface); }
+@media (prefers-color-scheme: dark) { .rung.reached { color: #0E1318; } }
+.rung .name { font-weight: 700; font-size: .95rem; line-height: 1.15; }
+.rung .you { position: absolute; top: -34px; left: 0; right: 0; text-align: center; font-weight: 900; font-size: .85rem; color: var(--ink); }
+.rung .you::after { content: ""; display: block; width: 2px; height: 10px; background: var(--ink); margin: 4px auto 0; }
+.rung .others { font-size: .75rem; line-height: 1.3; margin-top: 6px; opacity: .85; overflow-wrap: anywhere; }
+.verdict { font-size: 1.25rem; font-weight: 500; margin: 26px 0 4px; max-width: 60ch; }
+.verdict strong { font-weight: 900; }
+.reason { color: var(--muted); font-size: .95rem; max-width: 70ch; margin: 0; }
+
+.score { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--rule); }
+.score .big { font-size: 2.6rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+.score .small { color: var(--muted); font-size: .85rem; }
+
+ol.fixes { padding-left: 1.4em; margin: 16px 0 0; }
+ol.fixes li { margin: 0 0 14px; padding-left: 4px; }
+ol.fixes .what { font-weight: 700; display: block; }
+ol.fixes .how { color: var(--muted); }
+
+.layers { margin-top: 16px; }
+.layer { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 22px 8px; margin-bottom: 14px; }
+.layer header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.layer .q { color: var(--muted); font-size: .92rem; margin: 2px 0 12px; }
+.layer .pct { font-size: 1.6rem; font-weight: 900; }
+.bar { height: 6px; background: var(--rung-soft); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.bar span { display: block; height: 100%; background: var(--rung); }
+.finding { border-top: 1px solid var(--rule); padding: 12px 0; }
+.finding summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: baseline; }
+.finding summary::-webkit-details-marker { display: none; }
+.status { font-size: .8rem; font-weight: 700; }
+.status::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: currentColor; }
+.s-pass { color: var(--pass); } .s-partial { color: var(--partial); } .s-fail { color: var(--fail); }
+.s-info, .s-skip { color: var(--info); }
+.s-skip::before { background: transparent; border: 1.5px solid currentColor; width: 5px; height: 5px; }
+.finding .title { font-weight: 500; }
+.finding .sum { color: var(--muted); font-size: .92rem; display: block; }
+.finding .inferred { font-size: .78rem; color: var(--muted); border: 1px solid var(--rule); border-radius: 99px; padding: 0 7px; margin-left: 6px; white-space: nowrap; }
+.detail { margin: 10px 0 4px 88px; font-size: .88rem; }
+.detail .fix { margin: 0 0 8px; }
+.detail ul { margin: 0; padding-left: 1.1em; color: var(--muted); overflow-wrap: anywhere; }
+.detail table { border-collapse: collapse; margin-top: 8px; font-size: .82rem; }
+.detail td, .detail th { padding: 3px 10px 3px 0; text-align: left; border-bottom: 1px solid var(--rule); }
+
+.compare-wrap { overflow-x: auto; margin-top: 16px; }
+table.compare { border-collapse: collapse; width: 100%; min-width: 520px; }
+table.compare th, table.compare td { padding: 10px 12px 10px 0; text-align: left; border-bottom: 1px solid var(--rule); }
+table.compare th { font-weight: 700; font-size: .9rem; }
+table.compare td.num { font-weight: 700; }
+table.compare tr.total td { font-weight: 900; border-bottom: 2px solid var(--ink); }
+
+.method { margin-top: 64px; color: var(--muted); font-size: .88rem; max-width: 70ch; }
+.method p { margin: 0 0 10px; }
+@media (max-width: 640px) {
+  main { padding-top: 36px; }
+  .ladder { gap: 3px; } .rung { padding: 6px; } .rung .name { font-size: .72rem; }
+  .rung:nth-child(1) { height: 56px; } .rung:nth-child(2) { height: 84px; } .rung:nth-child(3) { height: 112px; }
+  .rung:nth-child(4) { height: 140px; } .rung:nth-child(5) { height: 168px; }
+  .detail { margin-left: 0; }
+}
+@media print {
+  body { background: #fff; } main { padding: 0; } .layer { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>client-store.example</h1>
+  <p class="lede">How ready this store is for AI shopping agents: whether they can get in, understand the catalogue, talk to the store, and complete a purchase.</p>
+  <p class="meta">Scanned 2026-11-12 20:38 UTC · 2 pages · UCP schemas up to 2026-08-25</p>
+
+  <div class="ladder" role="img" aria-label="Maturity ladder: client-store.example is at Invisible">
+    <div class="rung reached">
+<span class="you">This store</span>      <span class="name">Invisible</span>
+    </div>
+    <div class="rung ">
+      <span class="name">Readable</span>
+    </div>
+    <div class="rung ">
+      <span class="name">Discoverable</span>
+    </div>
+    <div class="rung ">
+      <span class="name">Transactable</span>
+    </div>
+    <div class="rung ">
+      <span class="name">Agent-native</span>
+<span class="others">rival-outdoors.example</span>    </div>
+  </div>
+  <p class="verdict"><strong>Invisible.</strong> AI agents are blocked or can&#39;t read the product pages.</p>
+  <p class="reason">Not yet Readable: needs &#39;robots.txt lets AI agents in&#39; (fail); &#39;Bot protection lets AI agents through&#39; (fail); &#39;Content is readable without JavaScript&#39; (fail).</p>
+
+  <div class="score">
+    <div><div class="big">3</div><div class="small">Readiness score out of 100</div></div>
+    <div><div class="big" style="font-size:1.6rem">9</div><div class="small">Agent access</div></div>
+    <div><div class="big" style="font-size:1.6rem">0</div><div class="small">Commerce protocols</div></div>
+    <div><div class="big" style="font-size:1.6rem">0</div><div class="small">Agent-to-agent</div></div>
+    <div><div class="big" style="font-size:1.6rem">4</div><div class="small">AI discoverability</div></div>
+    <div><div class="big" style="font-size:1.6rem">0</div><div class="small">Works without JavaScript</div></div>
+    <div><div class="big" style="font-size:1.6rem">0</div><div class="small">Task completion</div></div>
+  </div>
+
+  <h2>Fix these first</h2>
+  <p class="lede">Ordered by how much each one holds the score back.</p>
+  <ol class="fixes">
+    <li><span class="what">robots.txt lets AI agents in</span><span class="how">Allow search and user-initiated agents (OAI-SearchBot, ChatGPT-User, Claude-User, PerplexityBot, Googlebot, Bingbot) on product and category paths. You can still block training crawlers.</span></li>
+    <li><span class="what">Bot protection lets AI agents through</span><span class="how">In your CDN/WAF (Cloudflare, Akamai, Imperva…), allow verified AI search and user agents, or adopt Web Bot Auth so signed agents can be told apart from scrapers.</span></li>
+    <li><span class="what">UCP profile is published and valid</span><span class="how">Publish a UCP business profile at /.well-known/ucp declaring your services, capabilities (checkout, cart, catalog) and payment handlers. Shopify, commercetools and others can generate this; see ucp.dev.</span></li>
+    <li><span class="what">Product pages carry Product markup</span><span class="how">Add JSON-LD Product markup (server-rendered) to every product template.</span></li>
+    <li><span class="what">Price, currency and availability are machine-readable</span><span class="how">Include name, image, description, offers.price, offers.priceCurrency and offers.availability.</span></li>
+    <li><span class="what">Products have GTIN/MPN and brand</span><span class="how">Add gtin13 (or gtin/mpn) and brand to Product markup.</span></li>
+  </ol>
+
+  <h2>Against the competition</h2>
+  <div class="compare-wrap">
+  <table class="compare">
+    <thead><tr><th></th><th>client-store.example</th><th>rival-outdoors.example</th></tr></thead>
+    <tbody>
+      <tr><td>Maturity</td><td>Invisible</td><td>Agent-native</td></tr>
+      <tr><td>Agent access</td><td class="num">9</td><td class="num">100</td></tr>
+      <tr><td>Commerce protocols</td><td class="num">0</td><td class="num">100</td></tr>
+      <tr><td>Agent-to-agent</td><td class="num">0</td><td class="num">100</td></tr>
+      <tr><td>AI discoverability</td><td class="num">4</td><td class="num">97</td></tr>
+      <tr><td>Works without JavaScript</td><td class="num">0</td><td class="num">100</td></tr>
+      <tr><td>Task completion</td><td class="num">0</td><td class="num">100</td></tr>
+      <tr class="total"><td>Score</td><td>3</td><td>99</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>What we checked</h2>
+  <p class="lede">Open any line to see the evidence.</p>
+  <div class="layers">
+    <section class="layer" aria-labelledby="l-access">
+      <header><h3 id="l-access">Agent access</h3>
+        <span class="pct">9</span></header>
+      <p class="q">Can AI agents get in?</p>
+      <div class="bar"><span style="width: 9%"></span></div>
+      <details class="finding">
+        <summary>
+          <span class="status s-pass">Pass</span>
+          <span><span class="title">robots.txt is reachable</span>          <span class="sum">robots.txt is published.</span></span>
+        </summary>
+        <div class="detail">
+<ul><li>https://client-store.example/robots.txt → 200</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">robots.txt lets AI agents in</span>          <span class="sum">Most AI search/assistant agents are disallowed: OAI-SearchBot, ChatGPT-User, Claude-SearchBot, Claude-User, PerplexityBot, Perplexity-User, Bingbot.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Allow search and user-initiated agents (OAI-SearchBot, ChatGPT-User, Claude-User, PerplexityBot, Googlebot, Bingbot) on product and category paths. You can still block training crawlers.</p>          <table><thead><tr><th>Agent</th><th>Role</th><th>Home</th><th>Product</th></tr></thead><tbody>
+<tr><td>GPTBot</td><td>training</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>OAI-SearchBot</td><td>search</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>ChatGPT-User</td><td>user</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>ClaudeBot</td><td>training</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>Claude-SearchBot</td><td>search</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>Claude-User</td><td>user</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>PerplexityBot</td><td>search</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>Perplexity-User</td><td>user</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>Googlebot</td><td>search</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>Google-Extended</td><td>training</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>Bingbot</td><td>search</td>
+            <td>blocked</td><td>blocked</td></tr><tr><td>Applebot-Extended</td><td>training</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>Amazonbot</td><td>search</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>meta-externalagent</td><td>training</td>
+            <td>allowed</td><td>allowed</td></tr><tr><td>CCBot</td><td>training</td>
+            <td>allowed</td><td>allowed</td></tr>          </tbody></table>
+        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Bot protection lets AI agents through</span><span class="inferred">inferred</span>          <span class="sum">Bot protection blocks most AI agents: ChatGPT-User, Claude-User, Googlebot, OAI-SearchBot, PerplexityBot.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> In your CDN/WAF (Cloudflare, Akamai, Imperva…), allow verified AI search and user agents, or adopt Web Bot Auth so signed agents can be told apart from scrapers.</p><p>Probed with the agents&#39; user-agent strings from our IP. Real agents may be verified by IP or signature, so a block here strongly suggests — but does not prove — the real agent is blocked.</p><ul><li>OAI-SearchBot on https://client-store.example/: 403 HTTP 403</li><li>ChatGPT-User on https://client-store.example/: 403 HTTP 403</li><li>Claude-User on https://client-store.example/: 403 HTTP 403</li><li>PerplexityBot on https://client-store.example/: 403 HTTP 403</li><li>Googlebot on https://client-store.example/: 403 HTTP 403</li><li>OAI-SearchBot on https://client-store.example/products/thing: 403 HTTP 403</li><li>ChatGPT-User on https://client-store.example/products/thing: 403 HTTP 403</li><li>Claude-User on https://client-store.example/products/thing: 403 HTTP 403</li><li>PerplexityBot on https://client-store.example/products/thing: 403 HTTP 403</li><li>Googlebot on https://client-store.example/products/thing: 403 HTTP 403</li></ul>        </div>
+      </details>
+    </section>
+    <section class="layer" aria-labelledby="l-protocols">
+      <header><h3 id="l-protocols">Commerce protocols</h3>
+        <span class="pct">0</span></header>
+      <p class="q">Does the store speak UCP?</p>
+      <div class="bar"><span style="width: 0%"></span></div>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">UCP profile is published and valid</span>          <span class="sum">No UCP business profile found, so agents cannot discover what the store can do.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Publish a UCP business profile at /.well-known/ucp declaring your services, capabilities (checkout, cart, catalog) and payment handlers. Shopify, commercetools and others can generate this; see ucp.dev.</p><ul><li>https://client-store.example/.well-known/ucp → 500</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">UCP declares checkout or cart</span>          <span class="sum">Not applicable without a UCP profile.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Publish a UCP business profile at /.well-known/ucp declaring your services, capabilities (checkout, cart, catalog) and payment handlers. Shopify, commercetools and others can generate this; see ucp.dev.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">UCP endpoints respond</span>          <span class="sum">Not applicable without a UCP profile.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Publish a UCP business profile at /.well-known/ucp declaring your services, capabilities (checkout, cart, catalog) and payment handlers. Shopify, commercetools and others can generate this; see ucp.dev.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-info">Info</span>
+          <span><span class="title">ACP (ChatGPT checkout) signals</span><span class="inferred">inferred</span>          <span class="sum">No ACP signals found. ACP integrations are private, so absence is not proof.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Confirm with the client whether they are enrolled in ChatGPT Instant Checkout / ACP.</p>        </div>
+      </details>
+    </section>
+    <section class="layer" aria-labelledby="l-interop">
+      <header><h3 id="l-interop">Agent-to-agent</h3>
+        <span class="pct">0</span></header>
+      <p class="q">Is there a store agent my agent can talk to?</p>
+      <div class="bar"><span style="width: 0%"></span></div>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Store publishes an A2A agent card</span>          <span class="sum">No agent card found, so a shopper&#39;s agent has no store agent to negotiate with.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> If the store has (or plans) a shopping assistant, expose it via A2A with an agent card at /.well-known/agent-card.json.</p><ul><li>https://client-store.example/.well-known/agent-card.json → 500</li><li>https://client-store.example/.well-known/agent.json → 500</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Store exposes an MCP server</span>          <span class="sum">No MCP server found via the UCP profile or well-known paths.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Expose catalog search, cart and checkout as MCP tools and declare the endpoint in the UCP profile (transport: mcp).</p><ul><li>https://client-store.example/.well-known/mcp.json → 500</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-info">Info</span>
+          <span><span class="title">On-site chat or shopping assistant</span><span class="inferred">inferred</span>          <span class="sum">No on-site chat or assistant widget detected.</span></span>
+        </summary>
+        <div class="detail">
+        </div>
+      </details>
+    </section>
+    <section class="layer" aria-labelledby="l-discoverability">
+      <header><h3 id="l-discoverability">AI discoverability</h3>
+        <span class="pct">4</span></header>
+      <p class="q">Can answer engines understand and cite the catalogue?</p>
+      <div class="bar"><span style="width: 4%"></span></div>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Product pages carry Product markup</span>          <span class="sum">0 of 1 product pages have schema.org Product markup.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Add JSON-LD Product markup (server-rendered) to every product template.</p><ul><li>✗ https://client-store.example/products/thing: no Product markup</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Price, currency and availability are machine-readable</span>          <span class="sum">Average completeness of core product fields: 0%.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Include name, image, description, offers.price, offers.priceCurrency and offers.availability.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Products have GTIN/MPN and brand</span>          <span class="sum">Identifier coverage: 0%. Agents use GTINs to match the same product across stores.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Add gtin13 (or gtin/mpn) and brand to Product markup.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Return and shipping policies are machine-readable</span>          <span class="sum">Policy coverage: 0%. Agents compare total cost and return terms before recommending.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Add MerchantReturnPolicy (on Organization or offers) and OfferShippingDetails.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Ratings are machine-readable</span>          <span class="sum">0 of 1 product pages expose aggregateRating.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Expose aggregateRating where reviews exist.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-skip">Not run</span>
+          <span><span class="title">Marked-up price matches the visible price</span>          <span class="sum">No marked-up prices to compare.</span></span>
+        </summary>
+        <div class="detail">
+        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Brand identity is machine-readable</span>          <span class="sum">No Organization markup on the homepage.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Add Organization (or OnlineStore) JSON-LD with name, url, logo and sameAs profiles.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Sitemap lists the catalogue</span>          <span class="sum">No sitemap found in robots.txt or at /sitemap.xml.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Publish an XML sitemap and reference it from robots.txt.</p>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">llms.txt guide for AI</span>          <span class="sum">No llms.txt found.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Optional, low effort: publish /llms.txt pointing to key categories, policies and help pages. Adoption by AI vendors is still uneven.</p><ul><li>https://client-store.example/llms.txt → 500</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-partial">Partial</span>
+          <span><span class="title">Pages have titles, descriptions, canonicals and breadcrumbs</span>          <span class="sum">Metadata completeness: 17%.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Fill the gaps listed; canonicals and breadcrumbs help answer engines cite the right page.</p><ul><li>https://client-store.example/products/thing: missing meta description, canonical, og:title, og:image, breadcrumbs</li></ul>        </div>
+      </details>
+    </section>
+    <section class="layer" aria-labelledby="l-rendering">
+      <header><h3 id="l-rendering">Works without JavaScript</h3>
+        <span class="pct">0</span></header>
+      <p class="q">Is the content there before scripts run?</p>
+      <div class="bar"><span style="width: 0%"></span></div>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Content is readable without JavaScript</span>          <span class="sum">0 of 2 key pages show their core content in the raw HTML.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Server-render (SSR/SSG) product name, price, availability and JSON-LD; don&#39;t inject them client-side.</p><ul><li>✗ https://client-store.example/: 4 characters of text without JavaScript</li><li>✗ https://client-store.example/products/thing: 4 characters of text without JavaScript</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-skip">Not run</span>
+          <span><span class="title">Structured data does not depend on JavaScript</span>          <span class="sum">Headless browser not available; install the [browser] extra to run this check.</span></span>
+        </summary>
+        <div class="detail">
+        </div>
+      </details>
+    </section>
+    <section class="layer" aria-labelledby="l-task">
+      <header><h3 id="l-task">Task completion</h3>
+        <span class="pct">0</span></header>
+      <p class="q">Can an agent get from product to checkout?</p>
+      <div class="bar"><span style="width: 0%"></span></div>
+      <details class="finding">
+        <summary>
+          <span class="status s-fail">Fail</span>
+          <span><span class="title">Cart is reachable by assistant agents</span><span class="inferred">inferred</span>          <span class="sum">The cart page blocks or challenges assistant agents.</span></span>
+        </summary>
+        <div class="detail">
+<p class="fix"><strong>What to do:</strong> Allow verified user-initiated agents on cart and checkout paths.</p><ul><li>/cart as ChatGPT-User: 403</li></ul>        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-skip">Not run</span>
+          <span><span class="title">An agent can add a product to the cart</span>          <span class="sum">Headless browser not available; install the [browser] extra to run the journey probe.</span></span>
+        </summary>
+        <div class="detail">
+        </div>
+      </details>
+      <details class="finding">
+        <summary>
+          <span class="status s-skip">Not run</span>
+          <span><span class="title">An agent can reach checkout</span>          <span class="sum">Headless browser not available; install the [browser] extra to run the journey probe.</span></span>
+        </summary>
+        <div class="detail">
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <section class="method">
+    <h2>How to read this</h2>
+    <p>Tiers are gates, not score bands: a store reaches a tier only when it meets that tier and every tier below it. The score weights six areas: agent access 25%, commerce protocols 20%, agent-to-agent 10%, ai discoverability 20%, works without javascript 10%, task completion 15%.</p>
+    <p>Lines marked “inferred” are strong signals rather than proof. Bot-protection results come from requests using AI agents' user-agent strings; real agents may be verified by IP address or signature and treated differently. ACP (ChatGPT checkout) integrations are private, so they can only be inferred from the outside.</p>
+    <p>The journey probe adds one item to the cart and opens checkout, then stops. It never enters personal details, submits a form or pays.</p>
+<p>Notes: No category page found automatically. Use --category-url to add one.</p>  </section>
+</main>
+<script>
+  window.addEventListener("beforeprint", () => document.querySelectorAll("details").forEach(d => d.open = true));
+</script>
+</body>
+</html>

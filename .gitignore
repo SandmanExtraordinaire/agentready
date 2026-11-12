@@ -1,0 +1,9 @@
+# Client reports never go in the repo
+reports/
+*.report.html
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+build/
+dist/

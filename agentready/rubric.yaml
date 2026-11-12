@@ -1,0 +1,71 @@
+# Agentic commerce readiness rubric.
+# Tune weights here; no code changes needed. Finding ids match the checks.
+# Scoring: pass = 100% of weight, partial = 50%, fail = 0%. info/skip are not scored.
+
+layers:
+  access:
+    name: Agent access
+    question: Can AI agents get in?
+    weight: 25
+    findings: {robots_file: 2, robots_ai_agents: 10, bot_wall: 10}
+  protocols:
+    name: Commerce protocols
+    question: Does the store speak UCP?
+    weight: 20
+    findings: {ucp_profile: 8, ucp_checkout: 6, ucp_endpoints: 4, ucp_version: 2}
+  interop:
+    name: Agent-to-agent
+    question: Is there a store agent my agent can talk to?
+    weight: 10
+    findings: {a2a_card: 5, mcp_server: 5}
+  discoverability:
+    name: AI discoverability
+    question: Can answer engines understand and cite the catalogue?
+    weight: 20
+    findings: {product_schema: 6, offer_fields: 5, identifiers: 4, policies: 3, reviews: 1,
+               price_consistency: 3, organization: 2, sitemap: 2, llms_txt: 1, page_meta: 2}
+  rendering:
+    name: Works without JavaScript
+    question: Is the content there before scripts run?
+    weight: 10
+    findings: {raw_html: 6, js_markup: 4}
+  task:
+    name: Task completion
+    question: Can an agent get from product to checkout?
+    weight: 15
+    findings: {cart_access: 3, task_add_to_cart: 6, task_checkout: 6}
+
+# Maturity tiers are gates, not score bands: a store reaches a tier only if it
+# meets that tier's conditions AND every tier below it.
+# A condition is {finding_id: [allowed statuses]} or {any: [conditions...]}.
+tiers:
+  - name: Invisible
+    meaning: AI agents are blocked or can't read the product pages.
+    when: []
+  - name: Readable
+    meaning: Agents can get in and read product content without running JavaScript.
+    when:
+      - {robots_ai_agents: [pass, partial]}
+      - {bot_wall: [pass, partial]}
+      - {raw_html: [pass, partial]}
+  - name: Discoverable
+    meaning: Answer engines can understand products, prices and availability well enough to recommend them.
+    when:
+      - {product_schema: [pass]}
+      - {offer_fields: [pass, partial]}
+      - {sitemap: [pass, partial]}
+  - name: Transactable
+    meaning: An agent can put an item in the cart and reach checkout, through the site or through UCP.
+    when:
+      - any:
+          - {task_checkout: [pass, partial]}
+          - {ucp_checkout: [pass]}
+  - name: Agent-native
+    meaning: A valid UCP profile with live checkout, plus a store-side agent or MCP server agents can work with.
+    when:
+      - {ucp_profile: [pass]}
+      - {ucp_checkout: [pass]}
+      - {ucp_endpoints: [pass]}
+      - any:
+          - {a2a_card: [pass]}
+          - {mcp_server: [pass]}
