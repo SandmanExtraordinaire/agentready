@@ -32,6 +32,93 @@ Useful options:
 | `--delay S` | Seconds between requests to one site (default 0.6). |
 | `--name NAME` | Report file name. |
 
+## Run a full scan for a new site (step by step)
+
+Use this when you are starting from a fresh machine or terminal. Only scan sites
+you have a reason to assess.
+
+### One-time setup
+
+Requires Python 3.10 or newer (`python3 --version`). On macOS: `brew install python@3.12`.
+
+```bash
+git clone https://github.com/SandmanExtraordinaire/agentready.git
+cd agentready
+```
+
+```bash
+/opt/homebrew/bin/python3.12 -m venv .venv      # or: python3 -m venv .venv
+source .venv/bin/activate
+```
+
+```bash
+pip install --upgrade pip
+pip install -e '.[browser]'                      # add ,dev to also run the tests
+playwright install chromium                      # headless browser for the journey checks
+```
+
+### Every new terminal tab
+
+The virtual environment only lasts for the tab it was activated in.
+
+```bash
+cd agentready
+source .venv/bin/activate
+```
+
+The prompt now starts with `(.venv)`.
+
+### Scan a site
+
+```bash
+agentready scan newsite.com
+```
+
+With competitors, for comparison on the maturity ladder:
+
+```bash
+agentready scan newsite.com --vs rival-one.com --vs rival-two.com
+```
+
+Faster run without the browser checks, or a named report:
+
+```bash
+agentready scan newsite.com --no-browser --name newsite-2026-11
+```
+
+Scan specific pages instead of auto-discovering them:
+
+```bash
+agentready scan newsite.com \
+  --product-url https://newsite.com/products/example-shoe \
+  --category-url https://newsite.com/collections/shoes
+```
+
+### Read the results
+
+```bash
+open reports/newsite.com.html        # macOS; use xdg-open on Linux
+```
+
+`reports/newsite.com.json` holds the same data for further processing. Reports
+are git-ignored and must never be committed.
+
+### Run the tests (optional)
+
+```bash
+pip install -e '.[browser,dev]'
+pytest
+```
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `agentready: command not found` or `playwright: command not found` | The venv is not active in this tab. Run `source .venv/bin/activate` from the project folder. |
+| `File "setup.py" or "setup.cfg" not found` | pip is too old. Run `pip install --upgrade pip`, then retry. |
+| Python version error on install | Python is older than 3.10. Recreate the venv with Python 3.10+. |
+| Browser checks show "Not run" | Run `playwright install chromium`, or ignore if you passed `--no-browser`. |
+
 ## What it checks
 
 | Layer | Checks | Weight |
